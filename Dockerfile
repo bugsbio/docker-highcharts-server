@@ -5,7 +5,7 @@ MAINTAINER Leonard Daume <lenny@daume-web.eu>
 RUN \
   apt-get update && \
   apt-get upgrade -y && \
-  apt-get install -y libfreetype6 libfontconfig bzip2 subversion
+  apt-get install -y git libfreetype6 libfontconfig bzip2 subversion
 
 # install maven
 RUN wget http://apache.mirror.digionline.de/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz
@@ -34,10 +34,12 @@ RUN apt-get --yes --no-install-recommends install \
   && rm -rf /var/lib/apt/lists/*
 
 ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64
-RUN svn co https://github.com/highslide-software/highcharts.com/trunk/exporting-server/java/highcharts-export
-RUN mvn -f ./highcharts-export/pom.xml install
-RUN mvn -f ./highcharts-export/highcharts-export-web/pom.xml clean package
-RUN cp highcharts-export/highcharts-export-web/target/highcharts-export-web.war webapps
+RUN git clone https://github.com/highcharts/highcharts-export-server.git
+RUN curl -sSLO https://code.highcharts.com/2.2/highcharts.js
+RUN cp highcharts.js ./highcharts-export-server/java/highcharts-export/highcharts-export-convert/src/main/resources/phantomjs
+RUN mvn -f ./highcharts-export-server/java/highcharts-export/pom.xml install
+RUN mvn -f ./highcharts-export-server/java/highcharts-export/highcharts-export-web/pom.xml clean package
+RUN cp ./highcharts-export-server/java/highcharts-export/highcharts-export-web/target/highcharts-export-web.war webapps
 RUN rm -rf highcharts-export
 
 EXPOSE 8080
